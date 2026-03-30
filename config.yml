@@ -1,0 +1,13 @@
+listen:
+  host: 127.0.0.1
+  port: 8080
+
+db:
+  db_name: splitit
+  host: 127.0.0.1
+  port: 5432
+  user: postgres
+  password: pass12
+  ssl_mode: disable
+
+jwt_secret: change-me-in-production
