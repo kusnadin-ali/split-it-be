@@ -3,8 +3,9 @@ package auth
 import (
 	"encoding/json"
 	"errors"
-	"github.com/kusnadin-ali/split-it-be/utils"
 	"net/http"
+
+	"github.com/kusnadin-ali/split-it-be/utils"
 )
 
 // handleRegister menangani POST /api/v1/auth/register
@@ -71,7 +72,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 // handleMe menangani GET /api/v1/me — hanya bisa diakses dengan JWT valid
 func handleMe(w http.ResponseWriter, r *http.Request) {
 	// userID diambil dari context, diset oleh JWTMiddleware
-	userID, ok := GetUserID(r.Context())
+	userID, ok := r.Context().Value(utils.ContextKeyUserID).(string)
 	if !ok || userID == "" {
 		utils.WriteError(w, http.StatusUnauthorized, errInvalidToken)
 		return

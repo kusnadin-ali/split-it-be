@@ -4,9 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/kusnadin-ali/split-it-be/auth"
-	"github.com/kusnadin-ali/split-it-be/utils"
 	"net/http"
+
+	"github.com/kusnadin-ali/split-it-be/auth"
+	"github.com/kusnadin-ali/split-it-be/ping"
+	"github.com/kusnadin-ali/split-it-be/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -59,12 +61,13 @@ func main() {
 	r.Mount("/api/v1/auth", auth.Router())
 
 	// Protected routes — semua di bawah ini butuh JWT
-	//r.Group(func(r chi.Router) {
-	//	r.Use(auth.JWTMiddleware)
-	//	r.Mount("/api/v1/me", auth.MeRouter())
-	//	// nanti: r.Mount("/api/v1/groups", group.Router())
-	//	// nanti: r.Mount("/api/v1/splits", split.Router())
-	//})
+	r.Group(func(r chi.Router) {
+		r.Use(auth.JWTMiddleware)
+		r.Mount("/api/v1/me", auth.MeRouter())
+		r.Mount("/api/v1/ping", ping.Router())
+		// nanti: r.Mount("/api/v1/groups", group.Router())
+		// nanti: r.Mount("/api/v1/splits", split.Router())
+	})
 
 	log.Info().Str("addr", cfg.Listen.Addr()).Msg("starting server")
 
