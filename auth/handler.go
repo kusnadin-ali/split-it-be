@@ -6,12 +6,14 @@ import (
 	"net/http"
 
 	"github.com/kusnadin-ali/split-it-be/utils"
+	"github.com/rs/zerolog/log"
 )
 
 // handleRegister menangani POST /api/v1/auth/register
 func handleRegister(w http.ResponseWriter, r *http.Request) {
 	var req registerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error().Err(err).Msg("decode register request")
 		utils.WriteError(w, http.StatusBadRequest, &appError{
 			Code:    "bad_request",
 			Message: "invalid request body",
@@ -21,6 +23,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := register(r.Context(), req)
 	if err != nil {
+		log.Error().Err(err).Msg("register")
 		var appErr *appError
 		if errors.As(err, &appErr) {
 			switch appErr {
@@ -57,6 +60,40 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		var appErr *appError
 		if errors.As(err, &appErr) && appErr == errInvalidCredential {
 			utils.WriteError(w, http.StatusUnauthorized, appErr)
+			return
+		}
+		utils.WriteError(w, http.StatusInternalServerError, &appError{
+			Code:    "internal_error",
+			Message: "something went wrong",
+		})
+		return
+	}
+
+	utils.CommonResponse(w, http.StatusOK, resp)
+}
+
+func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	var req updateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error().Err(err).Msg("decode update user request")
+		utils.WriteError(w, http.StatusBadRequest, &appError{
+			Code:    "bad_request",
+			Message: "invalid request body",
+		})
+		return
+	}
+
+	resp, err := updateAfterRegister(r.Context(), req)
+	if err != nil {
+		log.Error().Err(err).Msg("update user")
+		var appErr *appError
+		if errors.As(err, &appErr) {
+			switch appErr {
+			case errUserNotFound:
+				utils.WriteError(w, http.StatusNotFound, appErr)
+			default:
+				utils.WriteError(w, http.StatusBadRequest, appErr)
+			}
 			return
 		}
 		utils.WriteError(w, http.StatusInternalServerError, &appError{

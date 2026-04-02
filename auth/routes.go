@@ -10,6 +10,7 @@ func Router() *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/register", handleRegister)
 	r.Post("/login", handleLogin)
+	r.Put("/register/update-user", handleUpdateUser)
 	return r
 }
 

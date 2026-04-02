@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,21 +20,23 @@ func register(ctx context.Context, req registerRequest) (authResponse, error) {
 
 	existing, err := findUserByEmail(ctx, req.Email)
 	if err != nil {
+		log.Error().Err(err).Msg("find user by email")
 		return authResponse{}, err
 	}
 	if existing != nil {
+		log.Error().Str("email", req.Email).Msg("email already exists")
 		return authResponse{}, errEmailExists
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), 12)
 	if err != nil {
+		log.Error().Err(err).Msg("hash password")
 		return authResponse{}, fmt.Errorf("hash password: %w", err)
 	}
 
 	now := time.Now()
 	user := User{
 		ID:           uuid.NewString(),
-		Name:         req.Name,
 		Email:        req.Email,
 		PasswordHash: string(hash),
 		CreatedAt:    now,
@@ -41,6 +44,7 @@ func register(ctx context.Context, req registerRequest) (authResponse, error) {
 	}
 
 	if err := insertUser(ctx, user); err != nil {
+		log.Error().Err(err).Msg("insert user")
 		return authResponse{}, err
 	}
 
@@ -85,9 +89,6 @@ func getMe(ctx context.Context, userID string) (UserJSON, error) {
 // --- Validation ---
 
 func validateRegisterRequest(req registerRequest) error {
-	if len(req.Name) < 2 {
-		return &appError{Code: "validation_error", Message: "name must be at least 2 characters"}
-	}
 	if req.Email == "" {
 		return &appError{Code: "validation_error", Message: "email is required"}
 	}
@@ -158,4 +159,27 @@ func parseToken(tokenString string) (tokenClaims, error) {
 		UserID: claims["user_id"].(string),
 		Email:  claims["email"].(string),
 	}, nil
+}
+
+func updateAfterRegister(ctx context.Context, req updateUserRequest) (UserDetailJSON, error) {
+	user, err := findUserByEmail(ctx, req.Email)
+	if err != nil {
+		log.Error().Err(err).Msg("find user by email")
+		return UserDetailJSON{}, err
+	}
+	if user == nil {
+		log.Error().Str("email", req.Email).Msg("user not found")
+		return UserDetailJSON{}, errUserNotFound
+	}
+
+	user.FirstName = req.FirstName
+	user.LastName = req.LastName
+	user.AvatarURL = req.AvatarURL
+	user.UpdatedAt = time.Now()
+
+	if err := editUser(ctx, *user); err != nil {
+		log.Error().Err(err).Msg("update user")
+		return UserDetailJSON{}, err
+	}
+	return toUserDetailJSON(*user), nil
 }

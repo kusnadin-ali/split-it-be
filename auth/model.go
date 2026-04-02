@@ -6,7 +6,8 @@ import "time"
 // Ini murni data, tidak ada method business logic di sini.
 type User struct {
 	ID           string    `db:"id"`
-	Name         string    `db:"name"`
+	FirstName    string    `db:"first_name"`
+	LastName     string    `db:"last_name"`
 	Email        string    `db:"email"`
 	PasswordHash string    `db:"password_hash"`
 	AvatarURL    string    `db:"avatar_url"`
@@ -18,29 +19,45 @@ type User struct {
 // Dipisah dari domain struct supaya perubahan serialisasi
 // tidak menyentuh domain object. PasswordHash tidak pernah keluar.
 type UserJSON struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	AvatarURL string    `json:"avatar_url,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type UserDetailJSON struct {
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 func toUserJSON(u User) UserJSON {
 	return UserJSON{
-		ID:        u.ID,
-		Name:      u.Name,
 		Email:     u.Email,
-		AvatarURL: u.AvatarURL,
 		CreatedAt: u.CreatedAt,
+	}
+}
+
+func toUserDetailJSON(u User) UserDetailJSON {
+	return UserDetailJSON{
+		Email:     u.Email,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		AvatarURL: u.AvatarURL,
 	}
 }
 
 // --- Request types (input dari HTTP layer) ---
 
 type registerRequest struct {
-	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type updateUserRequest struct {
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 type loginRequest struct {
