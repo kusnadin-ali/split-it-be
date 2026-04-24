@@ -1,5 +1,5 @@
 listen:
-  host: 127.0.0.1
+  host: 0.0.0.0
   port: 8080
 
 db:
@@ -7,7 +7,7 @@ db:
   host: 127.0.0.1
   port: 5432
   user: postgres
-  password: pass12
+  password: inipass
   ssl_mode: disable
 
 jwt_secret: change-me-in-production

@@ -6,11 +6,11 @@ import "time"
 // Ini murni data, tidak ada method business logic di sini.
 type User struct {
 	ID           string    `db:"id"`
-	FirstName    string    `db:"first_name"`
-	LastName     string    `db:"last_name"`
+	FirstName    *string   `db:"first_name"`
+	LastName     *string   `db:"last_name"`
 	Email        string    `db:"email"`
 	PasswordHash string    `db:"password_hash"`
-	AvatarURL    string    `db:"avatar_url"`
+	AvatarURL    *string   `db:"avatar_url"`
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
 }
@@ -24,10 +24,10 @@ type UserJSON struct {
 }
 
 type UserDetailJSON struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	AvatarURL string `json:"avatar_url"`
+	Email     string  `json:"email"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	AvatarURL *string `json:"avatar_url"`
 }
 
 func toUserJSON(u User) UserJSON {
@@ -54,10 +54,10 @@ type registerRequest struct {
 }
 
 type updateUserRequest struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	AvatarURL string `json:"avatar_url"`
+	Email     string  `json:"email"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	AvatarURL *string `json:"avatar_url"`
 }
 
 type loginRequest struct {
